@@ -64,6 +64,6 @@
 	}
 
 	.number-input:focus {
-		@apply outline-none shadow-outline;
+		@apply ring-2 ring-blue-400 outline-none;
 	}
 </style>

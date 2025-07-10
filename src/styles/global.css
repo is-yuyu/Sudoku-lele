@@ -32,7 +32,7 @@ body {
 }
 
 .btn:focus {
-	@apply outline-none shadow-outline;
+	@apply outline-none ring-2 ring-blue-400;
 }
 
 .btn:disabled {
@@ -76,7 +76,7 @@ body {
 }
 
 .input:focus {
-	@apply outline-none shadow-outline;
+	@apply outline-none ring-2 ring-blue-400;
 }
 
 @tailwind utilities;
