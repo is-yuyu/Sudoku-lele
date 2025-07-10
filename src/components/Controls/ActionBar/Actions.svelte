@@ -34,6 +34,9 @@
 	let confirmDeleteId = null;
 	let confirmDeleteName = '';
 
+	export let showHintDetail = false;
+	let lastHint = null;
+
 	function handleHint() {
 		if (hintsAvailable) {
 			if ($candidates.hasOwnProperty($cursor.x + ',' + $cursor.y)) {
@@ -114,7 +117,7 @@
 			console.log('StrategyEngine result:', hint);
 			
 			if (hint) {
-				// 只更新hintDetail，不弹窗
+				lastHint = hint;
 				dispatch('updateHintDetail', hint);
 			} else {
 				console.log('No hint found');
@@ -343,6 +346,14 @@
 		editingBranchId = null;
 		editingBranchName = '';
 	}
+
+	function handleNextHintBtn() {
+		if (showHintDetail) {
+			dispatch('toggleHintDetail');
+		} else {
+			getNextHint();
+		}
+	}
 </script>
 
 <div class="action-buttons space-x-3">
@@ -378,20 +389,29 @@
 		{/if}
 	</button>
 
-	<button class="btn btn-round btn-badge" 
-		disabled={isCalculatingHint} 
-		on:click={getNextHint} 
-		title={isCalculatingHint ? "正在计算..." : "下一步提示"}>
+	<!-- 下一步提示按钮 -->
+	<button
+		class="btn btn-round btn-badge"
+		disabled={isCalculatingHint}
+		on:click={handleNextHintBtn}
+		title={isCalculatingHint ? "正在计算..." : (showHintDetail ? "关闭提示" : "下一步提示")}
+	>
 		{#if isCalculatingHint}
 			<svg class="icon-outline animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
 			</svg>
+		{:else if showHintDetail}
+			<!-- 白底蓝边黑色“×”icon -->
+			<svg class="icon-outline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#111" stroke-width="2">
+				<path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6l-12 12" />
+			</svg>
 		{:else}
-			<svg class="icon-outline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m4 0h-1v-4h-1" />
+			<!-- 白底蓝边黑色“？”icon -->
+			<svg class="icon-outline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#111" stroke-width="2">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M12 14a4 4 0 10-4-4" />
 			</svg>
 		{/if}
-		<span class="badge">{isCalculatingHint ? "..." : "?"}</span>
+		<span class="badge">{isCalculatingHint ? "..." : (showHintDetail ? "×" : "?")}</span>
 	</button>
 
 	<button class="btn btn-round btn-badge" on:click={notes.toggle} title="Notes ({$notes ? 'ON' : 'OFF'})">

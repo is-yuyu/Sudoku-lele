@@ -113,4 +113,17 @@
 	.board-padding {
 		@apply px-4 pb-4;
 	}
+	
+	/* 移动端优化：棋盘最大宽度100vw，最小宽度320px，始终居中 */
+	@media (max-width: 600px) {
+		.max-w-xl {
+			max-width: 100vw !important;
+			min-width: 320px;
+		}
+		.board-padding {
+			padding-left: 2vw;
+			padding-right: 2vw;
+			padding-bottom: 2vw;
+		}
+	}
 </style>

@@ -7,10 +7,19 @@
 
 	let hintDetail = null;
 	let highlightHint = false;
+	let showHintDetail = false;
 
 	function handleHintDetail(e) {
 		hintDetail = e.detail;
+		showHintDetail = true;
 		highlightHint = false; // 新提示时默认不高亮
+	}
+
+	function handleToggleHintDetail() {
+		showHintDetail = !showHintDetail;
+		if (!showHintDetail) {
+			hintDetail = null;
+		}
 	}
 
 	function handleCellClick() {
@@ -25,9 +34,9 @@
 <div class="px-4 pb-5 flex justify-center">
 	<div class="w-full max-w-xl">
 		<Board {hintDetail} {highlightHint} on:cellClick={handleCellClick} />
-		<ActionBar {hintDetail} {highlightHint} on:locate={handleLocate}>
+		<ActionBar {hintDetail} {highlightHint} {showHintDetail} on:locate={handleLocate}>
 			<Timer />
-			<Actions on:updateHintDetail={handleHintDetail} />
+			<Actions on:updateHintDetail={handleHintDetail} {showHintDetail} on:toggleHintDetail={handleToggleHintDetail} />
 		</ActionBar>
 		<Keyboard />
 	</div>

@@ -4,6 +4,7 @@
 	import { notes } from '@sudoku/stores/notes';
 	import { candidates } from '@sudoku/stores/candidates';
 	import { pushHistory } from '../../stores/branchPoints.js';
+	import { settings } from '@sudoku/stores/settings';
 
 	// TODO: Improve keyboardDisabled
 	import { keyboardDisabled } from '@sudoku/stores/keyboard';
@@ -74,6 +75,28 @@
 				break;
 		}
 	}
+
+	function isNumberInRowColBox(grid, x, y, num) {
+		for (let i = 0; i < 9; i++) {
+			if (grid[y][i] === num) return true;
+			if (grid[i][x] === num) return true;
+		}
+		const boxStartX = Math.floor(x / 3) * 3;
+		const boxStartY = Math.floor(y / 3) * 3;
+		for (let i = 0; i < 3; i++) {
+			for (let j = 0; j < 3; j++) {
+				if (grid[boxStartY + i][boxStartX + j] === num) return true;
+			}
+		}
+		return false;
+	}
+
+$: x = $cursor.x;
+$: y = $cursor.y;
+$: grid = $userGrid;
+$: cand = $candidates;
+$: onlyAllow = $settings.onlyAllowCandidates;
+$: candArr = cand && x !== undefined && y !== undefined && cand[x+','+y] ? cand[x+','+y] : [];
 </script>
 
 <svelte:window on:keydown={handleKey} /><!--on:beforeunload|preventDefault={e => e.returnValue = ''} />-->
@@ -88,7 +111,15 @@
 				</svg>
 			</button>
 		{:else}
-			<button class="btn btn-key" disabled={$keyboardDisabled} title="Insert {keyNum + 1}" on:click={() => handleKeyButton(keyNum + 1)}>
+			<button
+				class="btn btn-key"
+				disabled={
+					$keyboardDisabled ||
+					(onlyAllow && isNumberInRowColBox(grid, x, y, keyNum + 1))
+				}
+				title="Insert {keyNum + 1}"
+				on:click={() => handleKeyButton(keyNum + 1)}
+			>
 				{keyNum + 1}
 			</button>
 		{/if}
@@ -101,8 +132,25 @@
 		@apply grid grid-rows-2 grid-cols-5 gap-3;
 	}
 
-
 	.btn-key {
 		@apply py-4 px-0;
+	}
+
+	/* 移动端优化：按钮更大，底部固定，适合触控 */
+	@media (max-width: 600px) {
+		.keyboard-grid {
+			gap: 2vw;
+			padding: 2vw 0 0 0;
+		}
+		.btn-key {
+			font-size: 6vw;
+			padding-top: 4vw;
+			padding-bottom: 4vw;
+			min-width: 12vw;
+			min-height: 12vw;
+		}
+		:global(body) {
+			padding-bottom: 20vw;
+		}
 	}
 </style>

@@ -3,6 +3,8 @@
 	import { fade } from 'svelte/transition';
 	import { SUDOKU_SIZE } from '@sudoku/constants';
 	import { cursor } from '@sudoku/stores/cursor';
+	import { createEventDispatcher } from 'svelte';
+	const dispatch = createEventDispatcher();
 
 	export let value;
 	export let cellX;
