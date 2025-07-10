@@ -5,6 +5,10 @@ import confirm from './Confirm.svelte';
 import prompt from './Prompt.svelte';
 import welcome from './Welcome.svelte';
 import gameover from './GameOver.svelte';
+import strategyLearning from './StrategyLearning.svelte';
+import puzzleLibrary from './PuzzleLibrary.svelte';
+import wikiStrategy from './WikiStrategy.svelte';
+import hint from './Hint.svelte';
 
 export default {
 	share,
@@ -13,5 +17,9 @@ export default {
 	confirm,
 	prompt,
 	welcome,
-	gameover
+	gameover,
+	strategyLearning,
+	puzzleLibrary,
+	wikiStrategy,
+	hint
 }

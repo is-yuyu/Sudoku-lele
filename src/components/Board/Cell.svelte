@@ -15,6 +15,12 @@
 	export let selected;
 	export let sameArea;
 	export let sameNumber;
+	export let wrongNumber = false; // 新增：用户填入的数字是否错误
+	export let highlightPair = false;
+	export let highlightEliminate = false;
+	export let eliminateNums = [];
+	export let highlightMain = false;
+	export let highlightTrail = false;
 
 	const borderRight = (cellX !== SUDOKU_SIZE && cellX % 3 !== 0);
 	const borderRightBold = (cellX !== SUDOKU_SIZE && cellX % 3 === 0);
@@ -26,7 +32,11 @@
      class:border-r={borderRight}
      class:border-r-4={borderRightBold}
      class:border-b={borderBottom}
-     class:border-b-4={borderBottomBold}>
+     class:border-b-4={borderBottomBold}
+     class:highlight-main={highlightMain}
+     class:highlight-trail={highlightTrail}
+     class:highlight-pair={highlightPair}
+     class:highlight-eliminate={highlightEliminate}>
 
 	{#if !disabled}
 		<div class="cell-inner"
@@ -34,11 +44,12 @@
 		     class:selected={selected}
 		     class:same-area={sameArea}
 		     class:same-number={sameNumber}
-		     class:conflicting-number={conflictingNumber}>
+		     class:conflicting-number={conflictingNumber}
+		     class:wrong-number={wrongNumber}>
 
-			<button class="cell-btn" on:click={cursor.set(cellX - 1, cellY - 1)}>
+			<button class="cell-btn" on:click={() => { cursor.set(cellX - 1, cellY - 1); dispatch('click'); }}>
 				{#if candidates}
-					<Candidates {candidates} />
+					<Candidates {candidates} eliminateNums={eliminateNums} />
 				{:else}
 					<span class="cell-text">{value || ''}</span>
 				{/if}
@@ -118,5 +129,28 @@
 
 	.conflicting-number {
 		@apply text-red-600;
+	}
+
+	.wrong-number {
+		color: #dc2626;
+		background-color: #fef2f2;
+	}
+
+	.highlight-pair {
+		@apply border-4 border-blue-400;
+	}
+	.highlight-eliminate {
+		@apply border-4 border-yellow-400;
+	}
+	.highlight-main {
+		border: 3px solid #22c55e;
+		z-index: 30;
+		position: relative;
+		background: none !important;
+	}
+	.highlight-trail {
+		background: #bae6fd !important;
+		z-index: 20;
+		position: relative;
 	}
 </style>

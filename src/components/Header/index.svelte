@@ -6,9 +6,9 @@
 <div class="px-4 py-4 flex justify-center text-white">
 	<div class="w-full max-w-xl">
 
-		<nav class="flex flex-wrap items-center justify-between">
+		<nav class="flex flex-row items-center justify-between w-full gap-4">
 			<Dropdown />
-
+			<slot name="import" />
 			<Buttons />
 		</nav>
 

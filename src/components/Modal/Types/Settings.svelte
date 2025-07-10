@@ -30,7 +30,7 @@
 - Highlight cells in same Row/Column/Box
 - Highlight matching digits
 - Highlight conflicting digits
--
+- Show errors when wrong numbers are entered
 
 -->
 
@@ -50,6 +50,7 @@
 	<Switch bind:checked={settings.highlightCells} text="Highlight cells in same row/column/box" id="highlight-cells" />
 	<Switch bind:checked={settings.highlightSame} text="Highlight cells with the same number" id="highlight-matching" />
 	<Switch bind:checked={settings.highlightConflicting} text="Highlight conflicting numbers" id="highlight-conflicting" />
+	<Switch bind:checked={settings.showErrors} text="Show errors when wrong numbers are entered" id="show-errors" />
 </div>
 
 <div class="flex justify-end">

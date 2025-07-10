@@ -3,11 +3,13 @@
 	import { cursor } from '@sudoku/stores/cursor';
 	import { notes } from '@sudoku/stores/notes';
 	import { candidates } from '@sudoku/stores/candidates';
+	import { pushHistory } from '../../stores/branchPoints.js';
 
 	// TODO: Improve keyboardDisabled
 	import { keyboardDisabled } from '@sudoku/stores/keyboard';
 
 	function handleKeyButton(num) {
+		pushHistory();
 		if (!$keyboardDisabled) {
 			if ($notes) {
 				if (num === 0) {
