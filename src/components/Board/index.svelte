@@ -108,21 +108,25 @@
 		display: grid;
 		grid-template-columns: repeat(9, 1fr);
 		grid-template-rows: repeat(9, 1fr);
-		width: 100vw;
+		width: 100%;
 		max-width: 480px;
-		max-height: 80vw;
+		min-width: 320px;
 		aspect-ratio: 1 / 1;
 		background: #fff;
 		box-shadow: 0 2px 16px 0 rgba(0,0,0,0.08);
 		border-radius: 1rem;
 		margin: 0 auto;
 	}
+	:global(body) {
+		overflow-x: hidden;
+	}
 	@media (max-width: 600px) {
 		.sudoku-board {
-			max-width: 100vw;
-			max-height: 100vw;
-			min-width: 320px;
-			min-height: 320px;
+			width: 96vw;
+			max-width: 96vw;
+			max-height: 96vw;
+			min-width: 0;
+			min-height: 0;
 		}
 		.board-padding {
 			padding-left: 1vw;
