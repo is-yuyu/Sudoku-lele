@@ -20,7 +20,9 @@ jobs:
           persist-credentials: false
 
       - name: Setup 🔧
-        uses: actions/setup-node@v1.4.4
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
 
       - name: Install ♻
         run: npm install
