@@ -432,34 +432,4 @@
 		z-index: 51;
 	}
 	/* 其它原有样式可继续合并到这里 */
-
-	.sudoku-center-wrap {
-		width: 96vw;
-		max-width: 480px;
-		min-width: 320px;
-		margin-left: auto;
-		margin-right: auto;
-		padding-left: 2vw;
-		padding-right: 2vw;
-	}
-	@media (max-width: 600px) {
-		.sudoku-center-wrap {
-			width: 96vw;
-			max-width: 96vw;
-			min-width: 0;
-			padding-left: 2vw;
-			padding-right: 2vw;
-		}
-	}
 </style>
-
-<div class="sudoku-center-wrap">
-  <Header />
-  <Board />
-</div>
-
-<Controls />
-<Modal />
-{#if showBranchManager}
-  <BranchManager />
-{/if}
