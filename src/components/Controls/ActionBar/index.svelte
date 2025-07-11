@@ -2,15 +2,13 @@
   export let hintDetail = null;
   export let highlightHint = false;
   let showReasoning = false;
-  import { createEventDispatcher } from 'svelte';
-  const dispatch = createEventDispatcher();
-
   function toggleReasoning() {
     showReasoning = !showReasoning;
   }
   function locate(e) {
     e.stopPropagation();
-    dispatch('locate');
+    // 这里不再派发openBranchModal
+    // 只保留定位相关逻辑
   }
 </script>
 

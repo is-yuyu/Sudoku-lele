@@ -358,7 +358,7 @@
 
 <div class="action-buttons space-x-3">
 	<!-- 分支点按钮 -->
-	<button class="btn btn-round" title="分支点" on:click={() => showBranchModal = true}>
+	<button class="btn btn-round" title="分支点" on:click={() => dispatch('openBranchManager')}>
 		<svg class="icon-outline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 12h6m0 0l-3-3m3 3l-3 3m6-6v12" />
 		</svg>

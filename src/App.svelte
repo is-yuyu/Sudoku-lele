@@ -8,6 +8,7 @@
 	import Controls from './components/Controls/index.svelte';
 	import Header from './components/Header/index.svelte';
 	import Modal from './components/Modal/index.svelte';
+	import BranchManager from './components/Modal/BranchManager.svelte';
 	import { branchPoints, historyLength } from './stores/branchPoints.js';
 	import BranchPoint from './models/BranchPoint.js';
 	import { userGrid } from '@sudoku/stores/grid';
@@ -80,6 +81,8 @@
 
 	let editingBranchId = null;
 	let editingBranchName = '';
+
+	let showBranchManager = false;
 
 	// 获取当前棋盘快照和步数
 	function getCurrentBoardData() {
@@ -179,49 +182,106 @@
 
 	async function doImport() {
 		importError = '';
+		
+		if (!importUrl.trim()) {
+			importError = '请输入有效的URL或字符串';
+			return;
+		}
+
 		try {
-			const res = await fetch(importUrl);
-			const html = await res.text();
-			// 解析棋盘数据
-			const match = html.match(/var puzzle = \"([0-9\.]{81})\"/);
-			if (!match) {
-				importError = '未找到有效棋盘数据';
+			// 1. 先尝试bd参数
+			const bdMatch = importUrl.match(/[?&]bd=([0-9.]{81})/i);
+			if (bdMatch) {
+				return importBdString(bdMatch[1]);
+			}
+
+			// 2. 直接粘贴的81位字符串
+			const str = importUrl.replace(/[^0-9.]/g, '');
+			if (str.length === 81) {
+				return importBdString(str);
+			}
+
+			// 3. 检查是否是SudokuWiki主页
+			if (importUrl.includes('sudokuwiki.org/sudoku.htm') && !importUrl.includes('bd=')) {
+				importError = '这是SudokuWiki主页，没有具体题目。请：\n1. 访问 https://www.sudokuwiki.org/sudoku.htm\n2. 点击"Load a Puzzle"选择题目\n3. 复制包含bd参数的URL\n4. 或者直接粘贴81位数字字符串';
 				return;
 			}
-			const puzzle = match[1].replace(/\./g, '0').split('').map(Number);
-			if (puzzle.length !== 81) {
-				importError = '棋盘数据长度不正确';
+
+			// 4. fetch网页源码
+			let html;
+			try {
+				const res = await fetch(importUrl, {
+					mode: 'cors',
+					headers: {
+						'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+						'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+					}
+				});
+				html = await res.text();
+			} catch (fetchError) {
+				// 如果fetch失败，可能是CORS问题，提示用户手动复制数据
+				importError = '无法直接访问该URL（CORS限制）。请手动复制题目数据或使用bd参数。';
 				return;
 			}
-			// 解析难度标签
+
+			// 5.1 var puzzle = "..."
+			const match = html.match(/var puzzle = "([0-9.]{81})"/);
+			if (match) {
+				return importBdString(match[1]);
+			}
+
+			// 5.2 解析表格（如Daily_Sudoku页面）
+			const tableMatch = html.match(/<table[^>]*id=["']?puzzle_grid["']?[^>]*>([\s\S]*?)<\/table>/i);
+			if (tableMatch) {
+				const cellMatches = tableMatch[1].match(/<td[^>]*>([\s\S]*?)<\/td>/gi);
+				if (cellMatches && cellMatches.length === 81) {
+					const numbers = cellMatches.map(td => {
+						const num = td.replace(/<[^>]+>/g, '').trim();
+						return num === '' || num === '.' ? 0 : Number(num);
+					});
+					return importBdArray(numbers);
+				}
+			}
+
+			// 6. 尝试解析难度标签
 			let difficulty = '';
-			// 1. 尝试查找id="level"
+			// 6.1 尝试查找id="level"
 			const levelMatch = html.match(/<span[^>]*id=['\"]level['\"][^>]*>([^<]+)<\/span>/i);
 			if (levelMatch) {
 				difficulty = levelMatch[1].trim();
 			} else {
-				// 2. 尝试查找"Difficulty: xxx"
+				// 6.2 尝试查找"Difficulty: xxx"
 				const diffMatch = html.match(/Difficulty:\s*<\/b>\s*([A-Za-z]+)/i);
 				if (diffMatch) {
 					difficulty = diffMatch[1].trim();
 				}
 			}
-			// 转为9x9数组并加载
-			for (let y = 0; y < 9; y++) {
-				for (let x = 0; x < 9; x++) {
-					userGrid.set({ x, y }, puzzle[y * 9 + x]);
-				}
-			}
-			showImportModal = false;
-			// 弹窗提示难度
-			if (difficulty) {
-				alert(`导入成功，难度评级：${difficulty}`);
-			} else {
-				alert('导入成功，未能识别难度标签');
-			}
+
+			importError = '未找到有效棋盘数据。请确保URL包含具体的题目数据。';
 		} catch (e) {
 			importError = 'URL解析失败或网络错误';
 		}
+	}
+
+	function importBdString(bd) {
+		const arr = bd.replace(/\./g, '0').split('').map(Number);
+		for (let y = 0; y < 9; y++) {
+			for (let x = 0; x < 9; x++) {
+				userGrid.set({ x, y }, arr[y * 9 + x]);
+			}
+		}
+		showImportModal = false;
+		alert('成功导入题目！');
+	}
+
+	function importBdArray(arr) {
+		for (let y = 0; y < 9; y++) {
+			for (let x = 0; x < 9; x++) {
+				userGrid.set({ x, y }, arr[y * 9 + x]);
+			}
+		}
+		showImportModal = false;
+		alert('成功导入题目！');
 	}
 
 	function handleEditBranch(id, currentName) {
@@ -278,26 +338,91 @@
 </header>
 <!-- Sudoku Field and Controls -->
 <footer>
-	<Controls />
+	<Controls on:openBranchManager={() => showBranchManager = true} />
 </footer>
 
 <Modal />
 
 {#if showImportModal}
 <div class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-30">
-    <div class="bg-white p-6 rounded shadow-xl max-w-xs">
-        <div class="mb-2">请输入SudokuWiki题目页URL：</div>
-        <input class="input input-bordered w-full mb-2" bind:value={importUrl} placeholder="https://www.sudokuwiki.org/Sudoku.htm?..." />
-        {#if importError}
-            <div class="text-red-500 mb-2">{importError}</div>
+    <div class="bg-white p-6 rounded shadow-xl max-w-md w-full">
+        <div class="mb-4 text-lg font-semibold">导入SudokuWiki题目</div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">SudokuWiki题目URL：</label>
+            <input 
+                class="input input-bordered w-full mb-2" 
+                bind:value={importUrl} 
+                placeholder="输入SudokuWiki URL或81位数字字符串" 
+                type="text"
+            />
+            <div class="text-xs text-gray-500 mb-2">
+                支持格式：<br>
+                • SudokuWiki URL（如：https://www.sudokuwiki.org/sudoku.htm?bd=...）<br>
+                • 81位数字字符串（用0表示空格，如：530070000600195000...）<br>
+                • 包含bd参数的URL<br><br>
+                示例题目：<br>
+                <button class="text-blue-600 hover:underline" on:click={() => importUrl = '530070000600195000098000060800060003400803001700020006060000280000419005000080079'} on:click|preventDefault>
+                    简单题目（点击填入）
+                </button>
+            </div>
+            {#if importError}
+                <div class="text-red-500 text-sm mb-2 whitespace-pre-line">{importError}</div>
+            {/if}
+        </div>
+        <div class="flex gap-2">
+            <button class="btn btn-primary flex-1" on:click={doImport}>导入</button>
+            <button class="btn flex-1" on:click={() => { showImportModal = false; importUrl = ''; importError = ''; }}>取消</button>
+        </div>
+    </div>
+</div>
+{/if}
+
+{#if showBranchModal}
+<div class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-30">
+    <div class="bg-white p-6 rounded shadow-xl max-w-xs w-full">
+        <div class="mb-2 text-lg font-semibold">保存分支点</div>
+        <input class="input input-bordered w-full mb-2" bind:value={branchName} placeholder="分支点名称（可选）" maxlength="20" />
+        {#if branchError}
+            <div class="text-red-500 mb-2">{branchError}</div>
         {/if}
-        <button class="btn btn-primary w-full mb-2" on:click={doImport}>解析并导入</button>
-        <button class="btn w-full" on:click={() => showImportModal = false}>取消</button>
+        <button class="btn btn-primary w-full mb-2" on:click={handleAddBranch}>保存</button>
+        <button class="btn w-full" on:click={() => { showBranchModal = false; branchName = ''; branchError = ''; }}>取消</button>
     </div>
 </div>
 {/if}
 
 <!-- 删除分支点弹窗相关的所有代码（showBranchModal、分支点管理弹窗、confirmRestoreId、confirmDeleteId等） -->
+
+<BranchManager
+  show={showBranchManager}
+  on:close={() => showBranchManager = false}
+  on:restore={e => {
+    const bp = branchPoints.restore(e.detail);
+    if (bp && bp.boardData && bp.boardData.grid) {
+      // 恢复棋盘数据
+      for (let y = 0; y < bp.boardData.grid.length; y++) {
+        for (let x = 0; x < bp.boardData.grid[y].length; x++) {
+          userGrid.set({ x, y }, bp.boardData.grid[y][x]);
+        }
+      }
+      // 恢复候选数
+      if (bp.boardData.candidates) {
+        for (let y = 0; y < 9; y++) {
+          for (let x = 0; x < 9; x++) {
+            candidates.clear({ x, y });
+          }
+        }
+        for (const key in bp.boardData.candidates) {
+          const [x, y] = key.split(',').map(Number);
+          for (const n of bp.boardData.candidates[key]) {
+            candidates.add({ x, y }, n);
+          }
+        }
+      }
+    }
+    showBranchManager = false;
+  }}
+/>
 
 <style global>
 	@import "./styles/global.css";

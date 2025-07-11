@@ -86,10 +86,68 @@ export default class Board {
         }
     }
 
-    // 从SudokuWiki URL加载题目（占位实现）
+    // 从SudokuWiki URL加载题目
     async loadFromUrl(url) {
-        // 这里可用fetch请求并解析HTML，提取棋盘数据
-        // 占位：实际实现需根据SudokuWiki页面结构解析
-        throw new Error('loadFromUrl方法待实现');
+        try {
+            // 1. 先尝试bd参数
+            const bdMatch = url.match(/[?&]bd=([0-9.]{81})/i);
+            if (bdMatch) {
+                return this.loadFromBdString(bdMatch[1]);
+            }
+
+            // 2. 直接粘贴的81位字符串
+            const str = url.replace(/[^0-9.]/g, '');
+            if (str.length === 81) {
+                return this.loadFromBdString(str);
+            }
+
+            // 3. fetch网页源码
+            const res = await fetch(url);
+            const html = await res.text();
+
+            // 3.1 var puzzle = "..."
+            const match = html.match(/var puzzle = "([0-9.]{81})"/);
+            if (match) {
+                return this.loadFromBdString(match[1]);
+            }
+
+            // 3.2 解析表格（如Daily_Sudoku页面）
+            const tableMatch = html.match(/<table[^>]*id=["']?puzzle_grid["']?[^>]*>([\s\S]*?)<\/table>/i);
+            if (tableMatch) {
+                const cellMatches = tableMatch[1].match(/<td[^>]*>([\s\S]*?)<\/td>/gi);
+                if (cellMatches && cellMatches.length === 81) {
+                    const numbers = cellMatches.map(td => {
+                        const num = td.replace(/<[^>]+>/g, '').trim();
+                        return num === '' || num === '.' ? 0 : Number(num);
+                    });
+                    return this.loadFromArray(numbers);
+                }
+            }
+
+            throw new Error('未找到有效棋盘数据');
+        } catch (error) {
+            throw new Error(`加载题目失败: ${error.message}`);
+        }
+    }
+
+    // 从bd字符串加载题目
+    loadFromBdString(bd) {
+        const arr = bd.replace(/\./g, '0').split('').map(Number);
+        return this.loadFromArray(arr);
+    }
+
+    // 从数组加载题目
+    loadFromArray(arr) {
+        if (arr.length !== 81) {
+            throw new Error('棋盘数据长度不正确');
+        }
+        
+        for (let y = 0; y < 9; y++) {
+            for (let x = 0; x < 9; x++) {
+                this.cells[y][x].value = arr[y * 9 + x];
+            }
+        }
+        
+        return this;
     }
 } 

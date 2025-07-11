@@ -10,11 +10,12 @@
 
 	const sencode = grid.getSencode($grid);
 
-	const link = BASE_URL + '#' + sencode;
+	const BASE_URL_CUSTOM = 'https://sudoku-lele-kgyp.vercel.app/';
+	const link = BASE_URL_CUSTOM + '#' + sencode;
 	const encodedLink = encodeURIComponent(link);
 	const facebookLink = 'https://www.facebook.com/sharer/sharer.php?u=' + encodedLink;
-	const twitterLink = 'https://twitter.com/intent/tweet?text=Check%20out%20this%20Sudoku%20puzzle!&url=' + encodedLink;
-	const mailToLink = 'mailto:?subject=A%20Sudoku%20puzzle%20for%20you&body=Here%27s%20a%20link%20to%20a%20Sudoku%20puzzle%20on%20sudoku.jonasgeiler.com%3A%0A%0A' + encodedLink;
+	const twitterLink = 'https://twitter.com/intent/tweet?text=快来挑战这个数独题目！&url=' + encodedLink;
+	const mailToLink = 'mailto:?subject=分享一个数独题目给你&body=这是一个数独题目的链接：%0A%0A' + encodedLink;
 
 	let copyText;
 
