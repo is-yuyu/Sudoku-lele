@@ -74,56 +74,60 @@
 </script>
 
 <div class="board-padding relative z-10" on:click={() => dispatch('cellClick')}>
-	<div class="max-w-xl relative">
-		<div class="w-full" style="padding-top: 100%"></div>
-	</div>
-	<div class="board-padding absolute inset-0 flex justify-center">
-
-		<div class="bg-white shadow-2xl rounded-xl overflow-hidden w-full h-full max-w-xl grid" class:bg-gray-200={$gamePaused}>
-
-			{#each $userGrid as row, y}
-				{#each row as value, x}
-					<Cell {value}
-					      cellY={y + 1}
-					      cellX={x + 1}
-					      candidates={$candidates[x + ',' + y]}
-					      disabled={$gamePaused}
-					      selected={isSelected($cursor, x, y)}
-					      userNumber={$grid[y][x] === 0}
-					      sameArea={$settings.highlightCells && !isSelected($cursor, x, y) && isSameArea($cursor, x, y)}
-					      sameNumber={$settings.highlightSame && value && !isSelected($cursor, x, y) && getValueAtCursor($userGrid, $cursor) === value}
-					      conflictingNumber={$settings.highlightConflicting && $grid[y][x] === 0 && $invalidCells.includes(x + ',' + y)}
-					      wrongNumber={isWrongNumber(value, x, y)}
-					      highlightMain={highlightHint && hintDetail && hintDetail.cell && hintDetail.cell.row === y && hintDetail.cell.col === x}
-					      highlightTrail={highlightHint && hintDetail && hintDetail.trail && hintDetail.trail.some(c => c.row === y && c.col === x)}
-					      highlightPair={hintDetail && hintDetail.cells && hintDetail.cells.some(c => c.row === y && c.col === x)}
-					      highlightEliminate={hintDetail && hintDetail.eliminate && hintDetail.eliminate.find(e => e.row === y && e.col === x)}
-					      eliminateNums={hintDetail && hintDetail.eliminate && hintDetail.eliminate.find(e => e.row === y && e.col === x) ? hintDetail.eliminate.find(e => e.row === y && e.col === x).remove : []}
-					      on:click={() => dispatch('cellClick')}
-					/>
-				{/each}
+	<div class="sudoku-board mx-auto">
+		{#each $userGrid as row, y}
+			{#each row as value, x}
+				<Cell {value}
+				      cellY={y + 1}
+				      cellX={x + 1}
+				      candidates={$candidates[x + ',' + y]}
+				      disabled={$gamePaused}
+				      selected={isSelected($cursor, x, y)}
+				      userNumber={$grid[y][x] === 0}
+				      sameArea={$settings.highlightCells && !isSelected($cursor, x, y) && isSameArea($cursor, x, y)}
+				      sameNumber={$settings.highlightSame && value && !isSelected($cursor, x, y) && getValueAtCursor($userGrid, $cursor) === value}
+				      conflictingNumber={$settings.highlightConflicting && $grid[y][x] === 0 && $invalidCells.includes(x + ',' + y)}
+				      wrongNumber={isWrongNumber(value, x, y)}
+				      highlightMain={highlightHint && hintDetail && hintDetail.cell && hintDetail.cell.row === y && hintDetail.cell.col === x}
+				      highlightTrail={highlightHint && hintDetail && hintDetail.trail && hintDetail.trail.some(c => c.row === y && c.col === x)}
+				      highlightPair={hintDetail && hintDetail.cells && hintDetail.cells.some(c => c.row === y && c.col === x)}
+				      highlightEliminate={hintDetail && hintDetail.eliminate && hintDetail.eliminate.find(e => e.row === y && e.col === x)}
+				      eliminateNums={hintDetail && hintDetail.eliminate && hintDetail.eliminate.find(e => e.row === y && e.col === x) ? hintDetail.eliminate.find(e => e.row === y && e.col === x).remove : []}
+				      on:click={() => dispatch('cellClick')}
+				/>
 			{/each}
-
-		</div>
-
+		{/each}
 	</div>
 </div>
 
 <style>
 	.board-padding {
-		@apply px-4 pb-4;
+		@apply px-2 pb-2;
 	}
-	
-	/* 移动端优化：棋盘最大宽度100vw，最小宽度320px，始终居中 */
+	.sudoku-board {
+		display: grid;
+		grid-template-columns: repeat(9, 1fr);
+		grid-template-rows: repeat(9, 1fr);
+		width: 100vw;
+		max-width: 480px;
+		max-height: 80vw;
+		aspect-ratio: 1 / 1;
+		background: #fff;
+		box-shadow: 0 2px 16px 0 rgba(0,0,0,0.08);
+		border-radius: 1rem;
+		margin: 0 auto;
+	}
 	@media (max-width: 600px) {
-		.max-w-xl {
-			max-width: 100vw !important;
+		.sudoku-board {
+			max-width: 100vw;
+			max-height: 100vw;
 			min-width: 320px;
+			min-height: 320px;
 		}
 		.board-padding {
-			padding-left: 2vw;
-			padding-right: 2vw;
-			padding-bottom: 2vw;
+			padding-left: 1vw;
+			padding-right: 1vw;
+			padding-bottom: 1vw;
 		}
 	}
 </style>
